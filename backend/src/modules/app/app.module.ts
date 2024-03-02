@@ -14,11 +14,11 @@ import { UsersModule } from '../users/users.module';
       isGlobal: true,
     }),
     MongooseModule.forRootAsync({
-      useFactory: (configService) => {
-        return {
-          uri: configService.get('db.uri'),
-        };
-      },
+      useFactory: (configService) => ({
+        uri: configService.get('db.uri'),
+        dbName: configService.get('db.dbName'),
+        autoCreate: true,
+      }),
       inject: [ConfigService],
     }),
     UsersModule,
