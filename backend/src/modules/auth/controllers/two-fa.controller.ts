@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, Res, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Post,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from '../services/auth.service';
 import { serialize } from 'src/helpers/serialize';
 import { UserSerialization } from 'src/modules/users/serialization/user.serialzation';
@@ -18,6 +26,7 @@ export class TwoFAController {
     private readonly refreshTokenService: RefreshTokenService,
   ) {}
 
+  @HttpCode(200)
   @Get()
   async getSec(@CurrentUser() user: UserDocument) {
     const url = user.OtpAuthUrl;
@@ -28,6 +37,7 @@ export class TwoFAController {
     });
   }
 
+  @HttpCode(200)
   @Post()
   async validate2FA(
     @Body() twoFADto: TwoFADto,

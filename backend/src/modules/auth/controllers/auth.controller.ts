@@ -1,4 +1,11 @@
-import { Body, Controller, Post, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  Post,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from '../services/auth.service';
 import { SignupDto } from '../dtos/signup.dto';
 import { serialize } from 'src/helpers/serialize';
@@ -8,6 +15,9 @@ import { Response } from 'express';
 import { JsonResponse } from 'src/lib/responses/json-response';
 import { RefreshTokenDto } from '../dtos/refresh-token.dto';
 import { RefreshTokenService } from '../services/refresh-token.service';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import { UserDocument } from 'src/modules/users/models/user.model';
+import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -16,6 +26,7 @@ export class AuthController {
     private readonly refreshTokenService: RefreshTokenService,
   ) {}
 
+  @HttpCode(200)
   @Post('login')
   async login(
     @Body() loginDto: LoginDto,
@@ -34,6 +45,7 @@ export class AuthController {
     });
   }
 
+  @HttpCode(201)
   @Post('signup')
   async signup(@Body() signupDto: SignupDto) {
     const user = await this.authService.signup(signupDto);
@@ -44,6 +56,7 @@ export class AuthController {
     });
   }
 
+  @HttpCode(201)
   @Post('refresh-token')
   async refreshToken(
     @Body() refreshTokenDto: RefreshTokenDto,
@@ -61,6 +74,21 @@ export class AuthController {
         user: serialize(user, UserSerialization),
         refreshToken,
       },
+    });
+  }
+
+  @HttpCode(200)
+  @Post('logout')
+  @UseGuards(JwtAuthGuard)
+  async logout(
+    @Res({ passthrough: true }) response: Response,
+    @CurrentUser() user: UserDocument,
+  ) {
+    await this.refreshTokenService.deleteAllForUser(user);
+
+    response.clearCookie('access_token');
+    return new JsonResponse({
+      message: 'Logged out',
     });
   }
 }
