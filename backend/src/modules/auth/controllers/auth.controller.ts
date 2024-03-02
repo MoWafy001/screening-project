@@ -6,10 +6,15 @@ import { UserSerialization } from 'src/modules/users/serialization/user.serialza
 import { LoginDto } from '../dtos/login.dto';
 import { Response } from 'express';
 import { JsonResponse } from 'src/lib/responses/json-response';
+import { RefreshTokenDto } from '../dtos/refresh-token.dto';
+import { RefreshTokenService } from '../services/refresh-token.service';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly refreshTokenService: RefreshTokenService,
+  ) {}
 
   @Post('login')
   async login(
@@ -22,14 +27,40 @@ export class AuthController {
       httpOnly: true,
     });
 
-    const data = serialize(user, UserSerialization);
-    return new JsonResponse({ data });
+    return new JsonResponse({
+      data: {
+        user: serialize(user, UserSerialization),
+      },
+    });
   }
 
   @Post('signup')
   async signup(@Body() signupDto: SignupDto) {
     const user = await this.authService.signup(signupDto);
-    const data = serialize(user, UserSerialization);
-    return new JsonResponse({ data });
+    return new JsonResponse({
+      data: {
+        user: serialize(user, UserSerialization),
+      },
+    });
+  }
+
+  @Post('refresh-token')
+  async refreshToken(
+    @Body() refreshTokenDto: RefreshTokenDto,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const { user, accessToken, refreshToken } =
+      await this.refreshTokenService.refreshAccessToken(refreshTokenDto.token);
+
+    response.cookie('access_token', accessToken, {
+      httpOnly: true,
+    });
+
+    return new JsonResponse({
+      data: {
+        user: serialize(user, UserSerialization),
+        refreshToken,
+      },
+    });
   }
 }

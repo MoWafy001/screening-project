@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import {
   RefreshToken,
@@ -10,6 +10,7 @@ import { UserDocument } from 'src/modules/users/models/user.model';
 import { IJWTPayload } from 'src/common/interfaces/jwt-payload.interface';
 import { ConfigService } from '@nestjs/config';
 import ms from 'ms';
+import { AuthService } from './auth.service';
 
 @Injectable()
 export class RefreshTokenService {
@@ -18,7 +19,40 @@ export class RefreshTokenService {
     private readonly refreshTokenModel: Model<RefreshToken>,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly authService: AuthService,
   ) {}
+
+  async refreshAccessToken(oldRefreshToken: string) {
+    // get refresh record token
+    const token = await this.findByToken(oldRefreshToken);
+
+    // check if token is valid
+    if (!token || !this.isValid(token)) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+
+    // get user
+    const user = token.user;
+
+    // create access token
+    const newAccessToken = await this.authService.signLoginJWTFor(user, true);
+
+    // create new refresh token
+    const newRefreshToken = await this.createRefreshToken(user);
+
+    // delete old refresh token
+    await this.deleteByToken(oldRefreshToken);
+
+    // delete expired refresh tokens
+    await this.deleteExpiredForUser(user);
+
+    // return access token and refresh token
+    return {
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken.token,
+      user,
+    };
+  }
 
   async createRefreshToken(user: UserDocument) {
     const payload: IJWTPayload = {
@@ -50,22 +84,17 @@ export class RefreshTokenService {
       token = await this.findByToken(token);
     }
 
-    return token && !token.revoked && token.expiresAt > new Date();
+    try {
+      this.jwtService.verify(token?.token);
+    } catch (error) {
+      return false;
+    }
+
+    return token && token.expiresAt > new Date();
   }
 
   async findByToken(token: string): Promise<RefreshTokenDocument | null> {
     return this.refreshTokenModel.findOne({ token }).populate('user');
-  }
-
-  async revokeRefreshToken(token: string) {
-    return this.refreshTokenModel.updateOne({ token }, { revoked: true });
-  }
-
-  async revokeAllForUser(user: UserDocument) {
-    return this.refreshTokenModel.updateMany(
-      { userId: user._id, revoked: false },
-      { revoked: true },
-    );
   }
 
   async deleteExpiredForUser(user: UserDocument) {
@@ -73,5 +102,13 @@ export class RefreshTokenService {
       userId: user._id,
       expiresAt: { $lt: new Date() },
     });
+  }
+
+  async deleteAllForUser(user: UserDocument) {
+    return this.refreshTokenModel.deleteMany({ userId: user._id });
+  }
+
+  async deleteByToken(token: string) {
+    return this.refreshTokenModel.deleteOne({ token });
   }
 }

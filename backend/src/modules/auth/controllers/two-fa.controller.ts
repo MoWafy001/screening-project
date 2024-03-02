@@ -8,11 +8,15 @@ import { TwoFADto } from '../dtos/2fa.dto';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { JsonResponse } from 'src/lib/responses/json-response';
+import { RefreshTokenService } from '../services/refresh-token.service';
 
 @Controller('auth/2fa')
 @UseGuards(JwtAuthGuard)
 export class TwoFAController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly refreshTokenService: RefreshTokenService,
+  ) {}
 
   @Get()
   async getSec(@CurrentUser() user: UserDocument) {
@@ -30,13 +34,30 @@ export class TwoFAController {
     @Res({ passthrough: true }) response: Response,
     @CurrentUser() user: UserDocument,
   ) {
+    // validate 2fa
     const accessToken = await this.authService.validate2FA(user, twoFADto.otp);
 
+    // set access token
     response.cookie('access_token', accessToken, {
       httpOnly: true,
     });
 
-    const data = serialize(user, UserSerialization);
+    // create response data
+    const data: {
+      data: UserSerialization;
+      refreshToken?: string;
+    } = {
+      data: serialize(user, UserSerialization) as UserSerialization,
+    };
+
+    // if remember me is true, create refresh token
+    if (twoFADto.rememberMe) {
+      const refreshToken =
+        await this.refreshTokenService.createRefreshToken(user);
+      data.refreshToken = refreshToken.token;
+    }
+
+    // send response
     return new JsonResponse({ data });
   }
 }
