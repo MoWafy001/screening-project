@@ -6,6 +6,7 @@ import { Response } from 'express';
 import { UserDocument } from 'src/modules/users/models/user.model';
 import { TwoFADto } from '../dtos/2fa.dto';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 
 @Controller('auth/2fa')
 @UseGuards(JwtAuthGuard)
@@ -13,22 +14,22 @@ export class TwoFAController {
   constructor(private readonly authService: AuthService) {}
 
   @Get()
-  async getSec() {
-    return '2FA GET';
+  async getSec(@CurrentUser() user: UserDocument) {
+    return user.OtpAuthUrl;
   }
 
-  // @Post()
-  // async validate2FA(
-  //   @Body() twoFADto: TwoFADto,
-  //   @Res({ passthrough: true }) response: Response,
-  //   @CurrentUser() user: UserDocument,
-  // ) {
-  //   const accessToken = await this.authService.validate2FA(user, twoFADto.otp);
+  @Post()
+  async validate2FA(
+    @Body() twoFADto: TwoFADto,
+    @Res({ passthrough: true }) response: Response,
+    @CurrentUser() user: UserDocument,
+  ) {
+    const accessToken = await this.authService.validate2FA(user, twoFADto.otp);
 
-  //   response.cookie('access_token', accessToken, {
-  //     httpOnly: true,
-  //   });
+    response.cookie('access_token', accessToken, {
+      httpOnly: true,
+    });
 
-  //   return serialize(user, UserSerialization);
-  // }
+    return serialize(user, UserSerialization);
+  }
 }

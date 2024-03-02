@@ -4,6 +4,8 @@ import { UsersService } from 'src/modules/users/services/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { UserDocument } from 'src/modules/users/models/user.model';
 import { IJWTPayload } from 'src/common/interfaces/jwt-payload.interface';
+import * as speakeasy from 'speakeasy';
+import { TwoFADto } from '../dtos/2fa.dto';
 
 @Injectable()
 export class AuthService {
@@ -41,8 +43,14 @@ export class AuthService {
     return this.usersService.create(signupDto);
   }
 
-  async validate2FA(user: UserDocument, twoFADto: any) {
-    if (!user.isValidateOtp(twoFADto.otp)) {
+  async validate2FA(user: UserDocument, otp: string) {
+    const isValid = speakeasy.totp.verify({
+      secret: user.authenticatorSecret,
+      encoding: 'base32',
+      token: otp,
+    });
+
+    if (!isValid) {
       throw new UnauthorizedException('Invalid 2FA OTP');
     }
 

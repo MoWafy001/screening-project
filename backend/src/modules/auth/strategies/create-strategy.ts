@@ -6,14 +6,11 @@ import { getCook } from 'src/helpers/cookie';
 import { Request } from 'express';
 import { UsersService } from 'src/modules/users/services/users.service';
 import { IJWTPayload } from 'src/common/interfaces/jwt-payload.interface';
-
 export const createStrategy = (name: string) => {
   abstract class JwtStrategy extends PassportStrategy(Strategy, name) {
     @Inject(UsersService) usersService: UsersService;
 
     constructor(@Inject(ConfigService) configService: ConfigService) {
-      console.log('configService', configService.get('jwt.secret'));
-
       super({
         // from access_token cookie
         jwtFromRequest: ExtractJwt.fromExtractors([
@@ -42,18 +39,11 @@ export const createStrategy = (name: string) => {
           return false;
         }
 
-        const user = await this.usersService.findById(userId);
-        if (!user) {
-          return false;
-        }
-
-        request.user = user;
+        return this.usersService.findById(userId);
       } catch (error) {
         console.error(error);
         return false;
       }
-
-      return true;
     }
   }
 

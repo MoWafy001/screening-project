@@ -23,8 +23,13 @@ export class User {
 
   @Prop()
   OtpAuthUrl: string;
+}
 
-  generateAuthenticatorSecret(): void {
+export const UserSchema = SchemaFactory.createForClass(User);
+
+// on create hook
+UserSchema.pre('save', function (next) {
+  if (this.isNew) {
     const sec = speakeasy.generateSecret({
       name: `${this.firstName}@ThisApp`,
     });
@@ -32,14 +37,5 @@ export class User {
     this.authenticatorSecret = sec.base32;
     this.OtpAuthUrl = sec.otpauth_url;
   }
-
-  isValidateOtp(otp: string): boolean {
-    return speakeasy.totp.verify({
-      secret: this.authenticatorSecret,
-      encoding: 'base32',
-      token: otp,
-    });
-  }
-}
-
-export const UserSchema = SchemaFactory.createForClass(User);
+  next();
+});
