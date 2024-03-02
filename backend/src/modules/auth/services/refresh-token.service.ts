@@ -10,7 +10,7 @@ import { UserDocument } from 'src/modules/users/models/user.model';
 import { IJWTPayload } from 'src/common/interfaces/jwt-payload.interface';
 import { ConfigService } from '@nestjs/config';
 import ms from 'ms';
-import { AuthService } from './auth.service';
+import { TokenService } from './token.service';
 
 @Injectable()
 export class RefreshTokenService {
@@ -19,7 +19,7 @@ export class RefreshTokenService {
     private readonly refreshTokenModel: Model<RefreshToken>,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
-    private readonly authService: AuthService,
+    private readonly tokenService: TokenService,
   ) {}
 
   async refreshAccessToken(oldRefreshToken: string) {
@@ -35,10 +35,10 @@ export class RefreshTokenService {
     const user = token.user;
 
     // create access token
-    const newAccessToken = await this.authService.signLoginJWTFor(user, true);
+    const newAccessToken = await this.tokenService.signLoginJWTFor(user, true);
 
     // create new refresh token
-    const newRefreshToken = await this.createRefreshToken(user);
+    const newRefreshToken = await this.createToken(user);
 
     // delete old refresh token
     await this.deleteByToken(oldRefreshToken);
@@ -54,11 +54,11 @@ export class RefreshTokenService {
     };
   }
 
-  async createRefreshToken(user: UserDocument) {
+  async createToken(user: UserDocument) {
     const payload: IJWTPayload = {
       sub: user._id.toString(),
       email: user.email,
-      isRefreshToken: true,
+      type: 'refresh',
     };
 
     const token = this.jwtService.sign(payload, {

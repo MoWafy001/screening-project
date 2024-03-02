@@ -1,8 +1,11 @@
 import {
+  BadRequestException,
   Body,
   Controller,
+  Get,
   HttpCode,
   Post,
+  Query,
   Res,
   UseGuards,
 } from '@nestjs/common';
@@ -89,6 +92,18 @@ export class AuthController {
     response.clearCookie('access_token');
     return new JsonResponse({
       message: 'Logged out',
+    });
+  }
+
+  @Get('verify-email')
+  async verifyEmail(@Query('token') token: string) {
+    if (!token) {
+      throw new BadRequestException('Token is required');
+    }
+
+    await this.authService.verifyEmail(token);
+    return new JsonResponse({
+      message: 'Email verified',
     });
   }
 }

@@ -33,6 +33,8 @@ export const createStrategy = (name: string) => {
       try {
         const token = getCook('access_token', request.headers.cookie);
         const payload: IJWTPayload = JSON.parse(atob(token.split('.')[1]));
+        if (payload.type !== 'access') return false;
+
         const userId = payload.sub;
 
         if (!(await this.extraValidations({ request, payload }))) {

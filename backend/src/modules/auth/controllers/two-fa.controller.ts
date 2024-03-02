@@ -63,7 +63,7 @@ export class TwoFAController {
     // if remember me is true, create refresh token
     if (twoFADto.rememberMe) {
       const refreshToken =
-        await this.refreshTokenService.createRefreshToken(user);
+        await this.refreshTokenService.createToken(user);
       data.refreshToken = refreshToken.token;
     }
 

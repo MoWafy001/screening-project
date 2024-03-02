@@ -15,6 +15,9 @@ export class User {
   @Prop()
   email: string;
 
+  @Prop({ default: false })
+  emailVerified: boolean;
+
   @Prop()
   password: string;
 

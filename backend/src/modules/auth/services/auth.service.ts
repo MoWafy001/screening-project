@@ -1,30 +1,19 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { SignupDto } from '../dtos/signup.dto';
 import { UsersService } from 'src/modules/users/services/users.service';
-import { JwtService } from '@nestjs/jwt';
 import { UserDocument } from 'src/modules/users/models/user.model';
-import { IJWTPayload } from 'src/common/interfaces/jwt-payload.interface';
 import * as speakeasy from 'speakeasy';
-import { ConfigService } from '@nestjs/config';
+import { EmailsService } from 'src/modules/emails/services/emails.service';
+import { TokenService } from './token.service';
+import { IJWTPayload } from 'src/common/interfaces/jwt-payload.interface';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly usersService: UsersService,
-    private readonly jwtService: JwtService,
-    private readonly configService: ConfigService,
+    private readonly emailsService: EmailsService,
+    private readonly tokenService: TokenService,
   ) {}
-
-  signLoginJWTFor(user: UserDocument, twoFA: boolean = false) {
-    const payload: IJWTPayload = {
-      email: user.email,
-      sub: user._id.toString(),
-      twoFA,
-    };
-    return this.jwtService.signAsync(payload, {
-      expiresIn: this.configService.get('JWT_EXPIRES_IN'),
-    });
-  }
 
   async login(loginDto: any) {
     const user = await this.usersService.findOne(loginDto);
@@ -34,12 +23,18 @@ export class AuthService {
 
     return {
       user,
-      accessToken: this.signLoginJWTFor(user),
+      accessToken: this.tokenService.signLoginJWTFor(user),
     };
   }
 
   async signup(signupDto: SignupDto) {
-    return this.usersService.create(signupDto);
+    const newUser = await this.usersService.create(signupDto);
+
+    const token =
+      await this.tokenService.signEmailVerificationTokenFor(newUser);
+    await this.emailsService.sendVerificationEmailTo(newUser, token);
+
+    return newUser;
   }
 
   async validate2FA(user: UserDocument, otp: string) {
@@ -53,6 +48,15 @@ export class AuthService {
       throw new UnauthorizedException('Invalid 2FA OTP');
     }
 
-    return this.signLoginJWTFor(user, true);
+    return this.tokenService.signLoginJWTFor(user, true);
+  }
+
+  async verifyEmail(token: string) {
+    const payload: IJWTPayload | boolean =
+      this.tokenService.validateEmailVerificationToken(token);
+    const user = await this.usersService.findById(payload.sub);
+    user.emailVerified = true;
+    await user.save();
+    return user;
   }
 }

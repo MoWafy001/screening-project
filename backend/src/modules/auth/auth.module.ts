@@ -10,6 +10,8 @@ import { TwoFAController } from './controllers/two-fa.controller';
 import { RefreshTokenService } from './services/refresh-token.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { RefreshToken, RefreshTokenSchema } from './models/refresh-token.model';
+import { EmailsModule } from '../emails/emails.module';
+import { TokenService } from './services/token.service';
 
 @Module({
   imports: [
@@ -30,8 +32,9 @@ import { RefreshToken, RefreshTokenSchema } from './models/refresh-token.model';
       inject: [ConfigService],
     }),
     PassportModule,
+    EmailsModule,
   ],
   controllers: [AuthController, TwoFAController],
-  providers: [AuthService, JwtStrategy, RefreshTokenService],
+  providers: [AuthService, JwtStrategy, RefreshTokenService, TokenService],
 })
 export class AuthModule {}
