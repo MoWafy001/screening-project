@@ -7,11 +7,13 @@ import { MongooseModule } from '@nestjs/mongoose';
 import dbConfig from 'src/config/db.config';
 import { UsersModule } from '../users/users.module';
 import { AuthModule } from '../auth/auth.module';
+import { JwtModule } from '@nestjs/jwt';
+import jwtConfig from 'src/config/jwt.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      load: [appConfig, dbConfig],
+      load: [appConfig, dbConfig, jwtConfig],
       isGlobal: true,
     }),
     MongooseModule.forRootAsync({
