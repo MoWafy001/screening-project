@@ -2,6 +2,8 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { SignupDto } from '../dtos/signup.dto';
 import { UsersService } from 'src/modules/users/services/users.service';
 import { JwtService } from '@nestjs/jwt';
+import { UserDocument } from 'src/modules/users/models/user.model';
+import { IJWTPayload } from 'src/common/interfaces/jwt-payload.interface';
 
 @Injectable()
 export class AuthService {
@@ -20,15 +22,30 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const payload = { email: user.email, sub: user._id };
-
     return {
       user,
-      accessToken: this.jwtService.sign(payload),
+      accessToken: this.signLoginJWTFor(user),
     };
+  }
+
+  signLoginJWTFor(user: UserDocument, twoFA: boolean = false) {
+    const payload: IJWTPayload = {
+      email: user.email,
+      sub: user._id.toString(),
+      twoFA,
+    };
+    return this.jwtService.sign(payload);
   }
 
   async signup(signupDto: SignupDto) {
     return this.usersService.create(signupDto);
+  }
+
+  async validate2FA(user: UserDocument, twoFADto: any) {
+    if (!user.isValidateOtp(twoFADto.otp)) {
+      throw new UnauthorizedException('Invalid 2FA OTP');
+    }
+
+    return this.signLoginJWTFor(user, true);
   }
 }
