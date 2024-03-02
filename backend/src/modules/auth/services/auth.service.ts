@@ -5,30 +5,15 @@ import { JwtService } from '@nestjs/jwt';
 import { UserDocument } from 'src/modules/users/models/user.model';
 import { IJWTPayload } from 'src/common/interfaces/jwt-payload.interface';
 import * as speakeasy from 'speakeasy';
-import { TwoFADto } from '../dtos/2fa.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
   ) {}
-
-  async login(loginDto: any) {
-    const user = await this.usersService.findOne(loginDto);
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-
-    if (user.password !== loginDto.password) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-
-    return {
-      user,
-      accessToken: this.signLoginJWTFor(user),
-    };
-  }
 
   signLoginJWTFor(user: UserDocument, twoFA: boolean = false) {
     const payload: IJWTPayload = {
@@ -36,7 +21,21 @@ export class AuthService {
       sub: user._id.toString(),
       twoFA,
     };
-    return this.jwtService.sign(payload);
+    return this.jwtService.signAsync(payload, {
+      expiresIn: this.configService.get('JWT_EXPIRES_IN'),
+    });
+  }
+
+  async login(loginDto: any) {
+    const user = await this.usersService.findOne(loginDto);
+    if (!user || user.password !== loginDto.password) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    return {
+      user,
+      accessToken: this.signLoginJWTFor(user),
+    };
   }
 
   async signup(signupDto: SignupDto) {

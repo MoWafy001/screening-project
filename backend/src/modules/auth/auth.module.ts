@@ -7,10 +7,16 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './strategies/jwt-strategy';
 import { TwoFAController } from './controllers/two-fa.controller';
+import { RefreshTokenService } from './services/refresh-token.service';
+import { MongooseModule } from '@nestjs/mongoose';
+import { RefreshToken, RefreshTokenSchema } from './models/refresh-token.model';
 
 @Module({
   imports: [
     UsersModule,
+    MongooseModule.forFeature([
+      { name: RefreshToken.name, schema: RefreshTokenSchema },
+    ]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => {
@@ -26,6 +32,6 @@ import { TwoFAController } from './controllers/two-fa.controller';
     PassportModule,
   ],
   controllers: [AuthController, TwoFAController],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, RefreshTokenService],
 })
 export class AuthModule {}
