@@ -7,6 +7,7 @@ import { UserDocument } from 'src/modules/users/models/user.model';
 import { TwoFADto } from '../dtos/2fa.dto';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import { JsonResponse } from 'src/lib/responses/json-response';
 
 @Controller('auth/2fa')
 @UseGuards(JwtAuthGuard)
@@ -15,7 +16,12 @@ export class TwoFAController {
 
   @Get()
   async getSec(@CurrentUser() user: UserDocument) {
-    return user.OtpAuthUrl;
+    const url = user.OtpAuthUrl;
+    return new JsonResponse({
+      data: {
+        url,
+      },
+    });
   }
 
   @Post()
@@ -30,6 +36,7 @@ export class TwoFAController {
       httpOnly: true,
     });
 
-    return serialize(user, UserSerialization);
+    const data = serialize(user, UserSerialization);
+    return new JsonResponse({ data });
   }
 }
