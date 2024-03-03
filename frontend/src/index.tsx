@@ -4,13 +4,14 @@ import reportWebVitals from "./reportWebVitals";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Layout } from "./components/layout";
 import ErrorPage from "./pages/errror";
+import { LoginPage } from "./pages/login";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <Layout />,
     errorElement: <ErrorPage />,
-    children: [],
+    children: [{ path: "login", element: <LoginPage /> }],
   },
 ]);
 
