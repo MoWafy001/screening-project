@@ -9,7 +9,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { WelcomePage } from "./pages/welcome";
 import { SignUpPage } from "./pages/signup";
-
+// require('dotenv').config()
 const router = createBrowserRouter([
   {
     path: "/",
@@ -22,6 +22,9 @@ const router = createBrowserRouter([
     ],
   },
 ]);
+
+console.log(process.env);
+
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement

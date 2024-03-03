@@ -30,7 +30,7 @@ export const SignUpPage = () => {
       password,
     };
 
-    const response = await fetch("http://localhost:4000/api/v1/auth/signup", {
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/v1/auth/signup`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -42,7 +42,7 @@ export const SignUpPage = () => {
 
     if (response.ok) {
       toast.success("Signed Up in successfully");
-      const response = await fetch("http://localhost:4000/api/v1/auth/2fa", {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/v1/auth/2fa`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -51,7 +51,7 @@ export const SignUpPage = () => {
       });
       const result = await response.json();
       console.log(result.data.url);
-      
+
       setQrCodeData(await qrcode.toDataURL(result.data.url));
       setPage("2fa");
       return;
@@ -84,7 +84,7 @@ export const SignUpPage = () => {
       rememberMe: false,
     };
 
-    const response = await fetch("http://localhost:4000/api/v1/auth/2fa", {
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/v1/auth/2fa`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -217,7 +217,7 @@ export const SignUpPage = () => {
               numInputs={6}
               renderSeparator={(index) => (
                 <span
-                  key={index+7}
+                  key={index + 7}
                   style={{
                     width: "10px",
                     height: "10px",

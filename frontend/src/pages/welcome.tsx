@@ -14,7 +14,7 @@ export const WelcomePage = () => {
       navigate("/login");
     }
 
-    fetch("http://localhost:4000/api/v1/profile", {
+    fetch(`${process.env.REACT_APP_API_URL}/api/v1/profile`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -96,7 +96,7 @@ export const WelcomePage = () => {
                     <button
                       className="btn btn-primary"
                       onClick={() => {
-                        fetch("http://localhost:4000/api/v1/auth/logout", {
+                        fetch(`${process.env.REACT_APP_API_URL}/api/v1/auth/logout`, {
                           method: "POST",
                           headers: {
                             "Content-Type": "application/json",
