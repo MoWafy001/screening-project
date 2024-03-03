@@ -52,8 +52,18 @@ export class AuthController {
 
   @HttpCode(201)
   @Post('signup')
-  async signup(@Body() signupDto: SignupDto) {
-    const user = await this.authService.signup(signupDto);
+  async signup(
+    @Body() signupDto: SignupDto,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const { user, accessToken } = await this.authService.signup(signupDto);
+
+    response.cookie('access_token', accessToken, {
+      httpOnly: true,
+      secure: false,
+      sameSite: 'lax',
+    });
+
     return new JsonResponse({
       data: {
         user: serialize(user, UserSerialization),

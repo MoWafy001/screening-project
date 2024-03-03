@@ -34,7 +34,10 @@ export class AuthService {
       await this.tokenService.signEmailVerificationTokenFor(newUser);
     await this.emailsService.sendVerificationEmailTo(newUser, token);
 
-    return newUser;
+    return this.login({
+      email: signupDto.email,
+      password: signupDto.password,
+    });
   }
 
   async validate2FA(user: UserDocument, otp: string) {

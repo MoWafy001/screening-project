@@ -1,4 +1,4 @@
-import "./index.css"
+import "./index.css";
 import ReactDOM from "react-dom/client";
 import reportWebVitals from "./reportWebVitals";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
@@ -8,6 +8,7 @@ import { LoginPage } from "./pages/login";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { WelcomePage } from "./pages/welcome";
+import { SignUpPage } from "./pages/signup";
 
 const router = createBrowserRouter([
   {
@@ -17,6 +18,7 @@ const router = createBrowserRouter([
     children: [
       { path: "", element: <WelcomePage /> },
       { path: "login", element: <LoginPage /> },
+      { path: "signup", element: <SignUpPage /> },
     ],
   },
 ]);
