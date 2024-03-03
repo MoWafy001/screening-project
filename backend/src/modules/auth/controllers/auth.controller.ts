@@ -39,6 +39,8 @@ export class AuthController {
 
     response.cookie('access_token', accessToken, {
       httpOnly: true,
+      secure: false,
+      sameSite: 'lax',
     });
 
     return new JsonResponse({

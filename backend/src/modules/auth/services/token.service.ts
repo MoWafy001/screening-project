@@ -11,7 +11,7 @@ export class TokenService {
     private readonly configService: ConfigService,
   ) {}
 
-  signLoginJWTFor(user: UserDocument, twoFA: boolean = false) {
+  async signLoginJWTFor(user: UserDocument, twoFA: boolean = false) {
     const payload: IJWTPayload = {
       email: user.email,
       sub: user._id.toString(),

@@ -23,7 +23,7 @@ export class AuthService {
 
     return {
       user,
-      accessToken: this.tokenService.signLoginJWTFor(user),
+      accessToken: await this.tokenService.signLoginJWTFor(user),
     };
   }
 

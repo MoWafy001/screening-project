@@ -3,13 +3,19 @@ import { AppModule } from './modules/app/app.module';
 import { ConfigService } from '@nestjs/config';
 import { HttpException, ValidationPipe } from '@nestjs/common';
 import { ValidationError } from 'class-validator';
+import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
 
   // cors
-  app.enableCors();
+  app.enableCors({
+    origin: 'http://localhost:3000',
+    credentials: true,
+  });
+
+  app.use(cookieParser());
 
   // validation pipe
   app.useGlobalPipes(

@@ -9,7 +9,8 @@ import { JwtService } from '@nestjs/jwt';
 import { UserDocument } from 'src/modules/users/models/user.model';
 import { IJWTPayload } from 'src/common/interfaces/jwt-payload.interface';
 import { ConfigService } from '@nestjs/config';
-import ms from 'ms';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const ms = require('ms');
 import { TokenService } from './token.service';
 
 @Injectable()

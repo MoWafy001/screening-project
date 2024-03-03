@@ -54,16 +54,15 @@ export class TwoFAController {
 
     // create response data
     const data: {
-      data: UserSerialization;
+      user: UserSerialization;
       refreshToken?: string;
     } = {
-      data: serialize(user, UserSerialization) as UserSerialization,
+      user: serialize(user, UserSerialization) as UserSerialization,
     };
 
     // if remember me is true, create refresh token
     if (twoFADto.rememberMe) {
-      const refreshToken =
-        await this.refreshTokenService.createToken(user);
+      const refreshToken = await this.refreshTokenService.createToken(user);
       data.refreshToken = refreshToken.token;
     }
 
