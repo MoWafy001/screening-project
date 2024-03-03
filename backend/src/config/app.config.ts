@@ -7,4 +7,5 @@ export default registerAs('app', () => ({
     'HOST',
     `http://localhost:${Env.get('PORT', 3000).toNumber()}`,
   ).toString(),
+  allowedOrigins: Env.get('ALLOWED_ORIGINS', '').toString().split(','),
 }));

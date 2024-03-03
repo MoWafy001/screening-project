@@ -15,7 +15,7 @@ export class EmailsService {
     const url = `${host}/api/v1/auth/verify-email?token=${token}`;
     await this.mailerService.sendMail({
       to: user.email,
-      subject: 'Verify your email',
+      subject: 'App Email Verification',
       template: 'verify-email',
       context: {
         firstName: user.firstName,
