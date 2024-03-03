@@ -6,6 +6,8 @@ import * as speakeasy from 'speakeasy';
 import { EmailsService } from 'src/modules/emails/services/emails.service';
 import { TokenService } from './token.service';
 import { IJWTPayload } from 'src/common/interfaces/jwt-payload.interface';
+import { comparePassword } from 'src/helpers/password';
+import { LoginDto } from '../dtos/login.dto';
 
 @Injectable()
 export class AuthService {
@@ -15,9 +17,9 @@ export class AuthService {
     private readonly tokenService: TokenService,
   ) {}
 
-  async login(loginDto: any) {
-    const user = await this.usersService.findOne(loginDto);
-    if (!user || user.password !== loginDto.password) {
+  async login(loginDto: LoginDto) {
+    const user = await this.usersService.findOne({ email: loginDto.email });
+    if (!user || !(await comparePassword(loginDto.password, user.password))) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
@@ -32,12 +34,12 @@ export class AuthService {
 
     const token =
       await this.tokenService.signEmailVerificationTokenFor(newUser);
-    await this.emailsService.sendVerificationEmailTo(newUser, token);
+    void this.emailsService.sendVerificationEmailTo(newUser, token);
 
-    return this.login({
-      email: signupDto.email,
-      password: signupDto.password,
-    });
+    return {
+      user: newUser,
+      accessToken: await this.tokenService.signLoginJWTFor(newUser),
+    };
   }
 
   async validate2FA(user: UserDocument, otp: string) {
