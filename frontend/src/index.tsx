@@ -5,6 +5,8 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Layout } from "./components/layout";
 import ErrorPage from "./pages/errror";
 import { LoginPage } from "./pages/login";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap-icons/font/bootstrap-icons.css"
 
 const router = createBrowserRouter([
   {
