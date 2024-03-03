@@ -53,6 +53,10 @@ export class AuthService {
       throw new UnauthorizedException('Invalid 2FA OTP');
     }
 
+    if (!user.twoFAEnabled) {
+      await this.usersService.updateOne(user, { twoFAEnabled: true });
+    }
+
     return this.tokenService.signLoginJWTFor(user, true);
   }
 

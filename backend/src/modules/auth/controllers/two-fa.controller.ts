@@ -5,6 +5,7 @@ import {
   HttpCode,
   Post,
   Res,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from '../services/auth.service';
@@ -29,6 +30,9 @@ export class TwoFAController {
   @HttpCode(200)
   @Get()
   async getSec(@CurrentUser() user: UserDocument) {
+    if (user.twoFAEnabled)
+      throw new UnauthorizedException('2FA is already enabled');
+
     const url = user.OtpAuthUrl;
     return new JsonResponse({
       data: {

@@ -12,6 +12,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { RefreshToken, RefreshTokenSchema } from './models/refresh-token.model';
 import { EmailsModule } from '../emails/emails.module';
 import { TokenService } from './services/token.service';
+import { JwtWith2faStrategy } from './strategies/jwt-with2fa-strategy';
 
 @Module({
   imports: [
@@ -35,6 +36,12 @@ import { TokenService } from './services/token.service';
     EmailsModule,
   ],
   controllers: [AuthController, TwoFAController],
-  providers: [AuthService, JwtStrategy, RefreshTokenService, TokenService],
+  providers: [
+    AuthService,
+    JwtStrategy,
+    JwtWith2faStrategy,
+    RefreshTokenService,
+    TokenService,
+  ],
 })
 export class AuthModule {}

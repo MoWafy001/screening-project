@@ -27,6 +27,9 @@ export class User {
 
   @Prop()
   OtpAuthUrl: string;
+
+  @Prop({ default: false })
+  twoFAEnabled: boolean;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

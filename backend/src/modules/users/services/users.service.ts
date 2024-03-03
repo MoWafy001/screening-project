@@ -13,6 +13,11 @@ export class UsersService {
     return await this.userModel.create(user);
   }
 
+  async updateOne(user: UserDocument, updateQuery: any): Promise<UserDocument> {
+    Object.assign(user, updateQuery);
+    return await user.save();
+  }
+
   async findOne(query: any): Promise<UserDocument> {
     return await this.userModel.findOne(query);
   }
